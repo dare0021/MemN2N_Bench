@@ -13,6 +13,8 @@ References:
 Reaches 98.6% accuracy on task 'single_supporting_fact_10k' after 120 epochs.
 Time per epoch: 3s on CPU (core i7).
 '''
+from __future__ import print_function
+
 from keras.models import Sequential, Model
 from keras.layers.embeddings import Embedding
 from keras.layers import Input, Activation, Dense, Permute, Dropout, add, dot, concatenate
@@ -23,8 +25,6 @@ from functools import reduce
 import tarfile
 import numpy as np
 import re
-
-import time
 
 
 def tokenize(sent):
@@ -215,32 +215,11 @@ answer = Activation('softmax')(answer)
 
 # build the final model
 model = Model([input_sequence, question], answer)
-model.compile(optimizer='adadelta', loss='sparse_categorical_crossentropy',
+model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
-
-print ("Check for invalid inputs. Tests should all return False.")
-print (np.isnan(inputs_train).any())
-print (np.isnan(queries_train).any())
-print (np.isnan(answers_train).any())
-print (np.isnan(inputs_test).any())
-print (np.isnan(queries_test).any())
-print (np.isnan(answers_test).any())
-
-print (np.isinf(inputs_train).any())
-print (np.isinf(queries_train).any())
-print (np.isinf(answers_train).any())
-print (np.isinf(inputs_test).any())
-print (np.isinf(queries_test).any())
-print (np.isinf(answers_test).any())
-
-
-startTime = time.clock()
 
 # train
 model.fit([inputs_train, queries_train], answers_train,
           batch_size=32,
           epochs=120,
           validation_data=([inputs_test, queries_test], answers_test))
-
-timeTaken = time.clock() - startTime
-print('Time taken:', timeTaken)
